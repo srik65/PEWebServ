@@ -1,0 +1,77 @@
+version: '2'
+services:
+  nginx:
+        image: nginx:1.13.7
+        container_name: nginx
+        depends_on:
+            - flask
+        volumes:
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf
+        networks:
+            - elk
+        ports:
+            - 80:80
+  flask:
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        image: flask:0.0.1
+        container_name: flask
+        environment:
+            - FLASK_APP=/code/srik_test.py
+        command: flask run --host=0.0.0.0
+        networks:
+            elk:
+                aliases:
+                    - flask-app
+        ports:
+            - 8080:5000
+  elasticsearch:
+    build:
+      context: elasticsearch/
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - elasticsearch:/usr/share/elasticsearch/data/:rw
+    ports:
+      - "127.0.0.1:9200:9200"
+      - "127.0.0.1:9300:9300"
+    environment:
+      ES_JAVA_OPTS: "-Xmx1g -Xms1g"
+    networks:
+      - elk
+  
+  logstash:
+    build:
+      context: logstash/
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ../home/proxy_logs:/home/proxy_logs:ro
+    ports:
+      - "1025:1025/udp"
+      - "127.0.0.1:5000:5000"
+      - "127.0.0.1:9600:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xmx1g -Xms1g"
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+  kibana:
+    build:
+      context: kibana/
+    volumes:
+      - ./kibana/config/:/usr/share/kibana/config:ro
+    ports:
+      - "127.0.0.1:5601:5601"
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+volumes:
+  elasticsearch:
+     driver: local
+  
+networks:
+  elk:
+

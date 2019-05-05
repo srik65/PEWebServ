@@ -19,7 +19,7 @@ services:
         container_name: flask
         environment:
             - FLASK_APP=/code/srik_test.py
-        command: sleep 60m
+        command: flask run --host=0.0.0.0
         networks:
             my-network:
                 aliases:
