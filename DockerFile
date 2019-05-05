@@ -1,11 +1,6 @@
-FROM python
-RUN pip install Flask Flask-SQLAlchemy
-RUN mkdir /app
-#Copy sources to app directory
-COPY . /app
-EXPOSE 5000
-ENV FLASK_APP srik_test.py
-#WORKDIR /app
-CMD flask run & > app.log
-#CMD ["/bin/sh"]
-
+FROM python:3
+RUN pip install flask flask_sqlalchemy
+ENV FLASK_APP /code/srik_test.py
+RUN mkdir code 
+COPY . /code
+RUN chmod 755 /code/test.py
