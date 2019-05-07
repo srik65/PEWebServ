@@ -9,7 +9,7 @@ Docker Compose >= 1.23
 
 Steps to start application, nginx, Kibana and Monitoring Dashboards..
 
-git clone <repo>
+git clone <repo> <br></br>
 cd docker-app
 docker-compose up -d 
 
