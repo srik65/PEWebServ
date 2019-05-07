@@ -4,6 +4,7 @@ from flask import request
 from app.models import Person
 from app import db
 from app.errors import bad_request
+from config import Config
 
 @app.route('/persons/<int:id>', methods=['GET'])
 def get_person(id):
@@ -17,14 +18,15 @@ def get_persons():
 @app.route('/persons', methods=['POST'])
 def create_person():
   data = request.get_json() or {}
-  fields = ['first_name','surname', 'age', 'favourite_color', 'nationality']
-  for elem in fields:
+  # fields = ['first_name','last_name', 'age', 'favourite_color', 'nationality']
+  for elem in Config.PERSON_DATA_FIELDS:
     if elem not in data:
-      return bad_request('must include ' + str(fields))
+      return bad_request('must include ' + str(Config.PERSON_DATA_FIELDS))
   person = Person()
   person.from_dict(data)
   db.session.add(person)
   db.session.commit()
+  app.logger.info("created person: "+str(person))
   response = jsonify(person.to_dict())
   response.response_code = 201
   return response
@@ -45,5 +47,6 @@ def delete_person(id):
   person = Person.query.get_or_404(id)
   db.session.delete(person)
   db.session.commit()
+  app.logger.info("deleted person with id: "+str(id))
   return jsonify(person.to_dict())
 
